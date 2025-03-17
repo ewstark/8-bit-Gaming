@@ -2,7 +2,11 @@
 
 ## Architecture
 
-___TBD___
+See the file "MSA Arcade Game.drawio" for a diagram of the system architecture.
+
+In abstraction, the system is formed by three primary components: the **Game Engine** which executes the main game loop, the **Graphics Engine** which renders each scene of the animated game, and the **Audio Engine** which asynchronously manages, mixes, and produces game sounds and background music.
+
+These three primary components have equivalent PyGame components within the prototype PC system.  These PyGame components can be mapped, via their APIs, to the corresponding hardware components using a bridge device.
 
 
 ## Abstract Processing Overview
