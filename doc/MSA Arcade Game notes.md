@@ -18,9 +18,9 @@ These three primary components have equivalent PyGame components within the prot
      * exit Game Loop
  * calculate asset updates
    * write new asset data to current **Game Data RAM** page
-   * upon events (collisions, enemy spawn/death, player attack, etc.): 
+   * upon events (collisions, enemy spawn/death, player attack, etc.):
      * start/stop sounds, lights, or change background music
-   * upon game-over (final player death): 
+   * upon game-over condition (e.g., final player death):
      * exit Game Loop
  * flip **Game Data RAM** page
    * _optional:_ confirm previous page was fully consumed by **Graphics Engine**
