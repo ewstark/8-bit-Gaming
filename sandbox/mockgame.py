@@ -5,7 +5,7 @@ WIDTH, HEIGHT = 900, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Mock Game")
 
-SCREEN_BACKGROUND_COLOR = (100, 255, 200)
+SCREEN_BACKGROUND_COLOR = (10, 25, 50)
 
 GAME_FPS = 60
 
@@ -13,11 +13,11 @@ SHIP_WIDTH, SHIP_HEIGHT = 55, 40
 
 YELLOW_SHIP_IMAGE = pygame.image.load(os.path.join("assets", "spaceship_yellow.png"))
 YELLOW_SHIP = pygame.transform.scale(YELLOW_SHIP_IMAGE, (SHIP_WIDTH, SHIP_HEIGHT))
-YELLOW_SHIP = pygame.transform.rotate(YELLOW_SHIP, 90)
+YELLOW_SHIP = pygame.transform.rotate(YELLOW_SHIP, 90)  # face right
 
 RED_SHIP_IMAGE = pygame.image.load(os.path.join("assets", "spaceship_red.png"))
 RED_SHIP = pygame.transform.scale(RED_SHIP_IMAGE, (SHIP_WIDTH, SHIP_HEIGHT))
-RED_SHIP = pygame.transform.rotate(RED_SHIP, -90)
+RED_SHIP = pygame.transform.rotate(RED_SHIP, -90)  # face left
 
 
 def draw_window(red, yellow):
@@ -28,8 +28,8 @@ def draw_window(red, yellow):
 
 
 def main():
-    red = pygame.Rect(700, 300, SHIP_WIDTH, SHIP_HEIGHT)
-    yellow = pygame.Rect(100, 300, SHIP_WIDTH, SHIP_HEIGHT)
+    yellow = pygame.Rect(100, HEIGHT//2, SHIP_WIDTH, SHIP_HEIGHT)
+    red = pygame.Rect(WIDTH-100, HEIGHT//2, SHIP_WIDTH, SHIP_HEIGHT)
     clock = pygame.time.Clock()
     run = True
     VEL = 2
