@@ -30,6 +30,9 @@
 # backup DrawIO files
 *.drawio.bkp
 
+# backup KiCad files
+Shared RAM Interface-backups/
+
 # Environments
 .env
 .venv
