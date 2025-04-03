@@ -1,32 +1,91 @@
+# Canary Crush
+# by Eric W. Stark
+# A simple game created in PyGame to test 
+
 import pygame
 import os
 
-# global vars
+from enum import Enum
+from dataclasses import dataclass, field
+
+# verbose debug output while game is running
 g_verbose = False
 
-screen_width, screen_height = 320, 240
-WIN = pygame.display.set_mode((screen_width, screen_height), pygame.RESIZABLE | pygame.SCALED)
-pygame.display.set_caption("Mock Game")
+# basic constants
+g_display_width, g_display_height = 320, 240
+g_cell_sprite_width, g_cell_sprite_height = 16, 16
 
-screen_bg_color = (10, 40, 15)
-ship_sprite_width, ship_sprite_screen_height = 16, 16
-YELLOW_SHIP_IMAGE = pygame.image.load(os.path.join("assets", "spaceship_yellow.png"))
-YELLOW_SHIP = pygame.transform.scale(YELLOW_SHIP_IMAGE, (ship_sprite_width, ship_sprite_screen_height))
+g_color_screen_bg = (10, 30, 20)
+
+
+@dataclass
+class Point:
+    x : int = 0
+    y : int = 0
+
+# The home cell for the player to start each round.
+g_home_cell = Point(7, 7)
+
+class SpriteSheet:
+    def __init__(self, filename):
+        self.sheet = pygame.image.load(filename).convert()
+
+    def image_at(self, x, y, dx, dy, colorkey = None):
+        # Loads image from x, y, x+offset, y+offset.
+        rect = pygame.Rect(x, y, x+dx, y+dy)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        if colorkey is not None:
+            if colorkey == -1:
+                colorkey = image.get_at((0,0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        return image
+
+class Direction(Enum):
+    UP = 0
+    RIGHT = 1
+    DOWN = 2
+    LEFT = 3
+
+class PlayerState(Enum):
+    STATIONARY = 0
+    MOVING = 1
+    PUSHING = 2
+    DYING = 3
+    DEAD = 4
+
+@dataclass
+class Player:
+    state         : PlayerState = PlayerState.STATIONARY
+    last_cell     : Point = g_home_cell
+    next_cell     : Point = g_home_cell
+    facing        : Direction = Direction.DOWN
+    sprite_width  : int = g_cell_sprite_width
+    sprite_height : int = g_cell_sprite_height
+    position      : Point = Point(g_home_cell.x * g_cell_sprite_width, 
+                                  g_home_cell.y * g_cell_sprite_height)
+
+# create window for game using native (low) resolution but scaled-up as possible
+g_pygame_display = pygame.display.set_mode((g_display_width, g_display_height), 
+                                           pygame.RESIZABLE | pygame.SCALED)
+pygame.display.set_caption("Canary Crush")
+
+canary_sprite_sheet = SpriteSheet(os.path.join("assets", "canary_sheet.png"))
+
+canary_sprite = canary_sprite_sheet.image_at(0, 0, g_cell_sprite_width, g_cell_sprite_height)
 
 pygame.mixer.init()
 laser_sound = pygame.mixer.Sound(os.path.join("assets", "laserShoot_8bit_22kHz_mono.wav"))
 
 def draw_window (yellow):
-    WIN.fill(screen_bg_color)
-    WIN.blit(YELLOW_SHIP, (yellow.x, yellow.y))
+    g_pygame_display.fill(g_color_screen_bg)
+    g_pygame_display.blit(canary_sprite, (yellow.x, yellow.y))
     pygame.display.update()
-
 
 class audio_interface:
     # Assume a register layout that occurs in one contiguous address range that is twice the size,
-    # in bytes, as the number of interface channels.  The first half of that range assigns a new
-    # volume to the addressed channel and queues the event for processing.  The second half is the
-    # patch assigned to each channel.
+    # in bytes, as the number of interface channels.  The first half of that range queues events.
+    # The second half assigns the patch number (0-255) to each channel.
     def __init__ (self, num_channels=16, channel_assignments=None, base_address=0x4000):
         assert(num_channels > 0)
         assert(base_address >= 0)
@@ -58,7 +117,7 @@ class audio_interface:
 
 
 def main (args):
-    yellow = pygame.Rect(screen_width//4 - ship_sprite_width, screen_height//2, ship_sprite_width, ship_sprite_screen_height)
+    yellow = pygame.Rect(g_display_width//4 - g_cell_sprite_width, g_display_height//2, g_cell_sprite_width, g_cell_sprite_height)
     clock = pygame.time.Clock()
     run = True
     VEL = 2
