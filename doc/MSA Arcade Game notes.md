@@ -70,9 +70,11 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating my own e
 
 You are a canary stuck in a mine! A maze of rocks surrounds you. You can slide the rocks if nothing is behind them. You can crush rocks that can't move. Gas clouds are chasing you. Avoid or destroy them by smashing them with rocks. They can also be stunned when player slams a common wall. Stunned clouds move slowly for a period of time.
 
-Within the rocks are parts of the ventilation shaft. These can be slid but not broken. Align them to automatically disperse all gas clouds. Destroy all clouds or repair the ventilation shaft to complete the level. The further you descend into the mine, the gas clouds will become more numerous, quick, and aggressive.
+Within the rocks are parts of the ventilation shaft. These can be slid but not broken. When sliding, they won't go past each other but will stick together. Connect them to automatically disperse all gas clouds. Destroy all clouds or repair the ventilation shaft to complete the level. The further you descend into the mine, the gas clouds will become more numerous, quick, and aggressive.
 
-Example of game-start setup:
+At random times and locations, the letters 'E', 'X', 'T', 'R', and 'A' will appear in blocks for a brief period of time. If the player breaks the block in time, they collect that letter. If they collect all letters, they get an extra life.
+
+Example of game setup at start of game:
 
     +-----------------------------------------+
     |w w w w w w w w w w w w w w w   Canary   |
@@ -93,5 +95,34 @@ Example of game-start setup:
     +-----------------------------------------+
     P = player
     w = wall
-    G = gas enemy
+    G = gas cloud
     V = ventilation shaft
+
+### Sprite Inventory
+
+* Wall block
+  * normal
+  * breaking, phase1..4
+  * seed location
+  * letter block, E/X/T/R/A
+  * ventilation shaft
+* Canary
+  * standing, right & up (left & down are derived as H/V flips)
+  * pushing, right & up (left & down are derived as H/V flips)
+  * dying, phase1..4
+  * victory, phase1..4
+* Gas cloud
+  * normal, phase1..4
+  * agitated, phase1..4
+  * stunned, phase1..4
+  * crushed (stuck to edge of block, one face that is rotated as needed)
+  * dying, phase1..4
+* GUI
+  * title screen
+  * game background
+  * player life (egg in nest)
+
+### Future Considerations & Brainstorm
+
+* Have some blocks be frozen in place and require an extra turn to break or push them.
+* Have the floors of some empty cells break-open to reveal lava that slows player but not gas clouds
