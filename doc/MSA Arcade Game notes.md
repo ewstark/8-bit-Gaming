@@ -51,12 +51,12 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating my own e
                             1 1 1 1 1 1 1 1 1 1 2
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
        +-----------------------------------------+
-     0 |w w w w w w w w w w w w w w w  Game Name |
-     1 |w                           w            |
-     2 |w                           w  Game--Art |
-     3 |w                           w  Game--Art |
-     4 |w                           w  Game--Art |
-     5 |w                           w  Game--Art |
+     0 |w w w w w w w w w w w w w w w   Canary   |
+     1 |w                           w   Crush!   |
+     2 |w                           w            |
+     3 |w                           w  Game-Art  |
+     4 |w                           w  Game-Art  |
+     5 |w                           w  Game-Art  |
      6 |w                           w            |
      7 |w             x             w P1: 1234567|
      8 |w                           w #lvl #lives|
@@ -71,3 +71,27 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating my own e
 You are a canary stuck in a mine! A maze of rocks surrounds you. You can slide the rocks if nothing is behind them. You can crush rocks that can't move. Gas clouds are chasing you. Avoid or destroy them by smashing them with rocks. They can also be stunned when player slams a common wall. Stunned clouds move slowly for a period of time.
 
 Within the rocks are parts of the ventilation shaft. These can be slid but not broken. Align them to automatically disperse all gas clouds. Destroy all clouds or repair the ventilation shaft to complete the level. The further you descend into the mine, the gas clouds will become more numerous, quick, and aggressive.
+
+Example of game-start setup:
+
+    +-----------------------------------------+
+    |w w w w w w w w w w w w w w w   Canary   |
+    |w   G     w                 w   Crush!   |
+    |w w w w   V w w w   w V w G w            |
+    |w         w           w     w  Game-Art  |
+    |w w w w   V w w w     w w   w  Game-Art  |
+    |w               w       w   w  Game-Art  |
+    |w   w   w   w w w   w w w   w            |
+    |w   w w w     P             w P1: 0000000|
+    |w   w       w   w w w w w w w #1      ooo|
+    |w w w w w w w   w     w     w            |
+    |w       w             w w   w P2: 0000000|
+    |w   w       w w   w         w #1      ooo|
+    |w G w w w w V w   w   w w w w            |
+    |w         w       w     G   w MSA Arcade |
+    |w w w w w w w w w w w w w w w  (c) 1982  |
+    +-----------------------------------------+
+    P = player
+    w = wall
+    G = gas enemy
+    V = ventilation shaft
