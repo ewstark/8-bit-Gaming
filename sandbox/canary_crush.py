@@ -1,6 +1,8 @@
 # Canary Crush
 # by Eric W. Stark
-# A simple game created in PyGame to test 
+# A simple game created in PyGame to test basic arcade game mechanisms
+# such as low-res sprite-based pixel graphics and channel-based asynchronous
+# audio events.
 
 import pygame
 import os
@@ -14,7 +16,7 @@ g_verbose = False
 # basic constants
 g_display_width, g_display_height = 320, 240
 g_cell_sprite_width, g_cell_sprite_height = 16, 16
-
+g_player_velocity = 2
 g_color_screen_bg = (10, 30, 20)
 
 
@@ -62,24 +64,43 @@ class Player:
     facing        : Direction = Direction.DOWN
     sprite_width  : int = g_cell_sprite_width
     sprite_height : int = g_cell_sprite_height
-    position      : Point = Point(g_home_cell.x * g_cell_sprite_width, 
-                                  g_home_cell.y * g_cell_sprite_height)
+    position      : Point = Point(last_cell.x * sprite_width, last_cell.y * sprite_height)
+    
+    def load_sprites (self, filename):
+        self.canary_sprite_sheet = SpriteSheet(filename)
+        self.sprite = self.canary_sprite_sheet.image_at(0, 0, self.sprite_width, self.sprite_height, -1)
+
+    def get_sprite (self):
+        return self.sprite
+
+    def update_position (self):
+        if self.state == PlayerState.MOVING:
+            if self.facing == Direction.UP:
+                self.position.y -= g_player_velocity
+            elif self.facing == Direction.DOWN:
+                self.position.y += g_player_velocity
+            elif self.facing == Direction.LEFT:
+                self.position.x -= g_player_velocity
+            elif self.facing == Direction.RIGHT:
+                self.position.x += g_player_velocity
+            # once we reach a cell position on the grid, we're done moving
+            if self.position.y % g_cell_sprite_height == 0 and self.position.x % g_cell_sprite_width == 0:
+                self.state = PlayerState.STATIONARY
+                self.last_cell = self.next_cell
+
 
 # create window for game using native (low) resolution but scaled-up as possible
 g_pygame_display = pygame.display.set_mode((g_display_width, g_display_height), 
                                            pygame.RESIZABLE | pygame.SCALED)
 pygame.display.set_caption("Canary Crush")
 
-canary_sprite_sheet = SpriteSheet(os.path.join("assets", "canary_sheet.png"))
-
-canary_sprite = canary_sprite_sheet.image_at(0, 0, g_cell_sprite_width, g_cell_sprite_height)
 
 pygame.mixer.init()
 laser_sound = pygame.mixer.Sound(os.path.join("assets", "laserShoot_8bit_22kHz_mono.wav"))
 
-def draw_window (yellow):
+def draw_window (player, blocks, gasses):
     g_pygame_display.fill(g_color_screen_bg)
-    g_pygame_display.blit(canary_sprite, (yellow.x, yellow.y))
+    g_pygame_display.blit(player.get_sprite(), (player.position.x, player.position.y))
     pygame.display.update()
 
 class audio_interface:
@@ -117,33 +138,56 @@ class audio_interface:
 
 
 def main (args):
-    yellow = pygame.Rect(g_display_width//4 - g_cell_sprite_width, g_display_height//2, g_cell_sprite_width, g_cell_sprite_height)
     clock = pygame.time.Clock()
     run = True
-    VEL = 2
     fire_held = False
+
+    # actors
+    player = Player()
+    player.load_sprites(os.path.join("assets", "canary_sheet.png"))
+    blocks = []
+    gasses = []
 
     while run:
         clock.tick(60) # limit update rate to 60 Hz
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+        
+        player.update_position()
+
         keys_pressed = pygame.key.get_pressed()
-        if keys_pressed[pygame.K_w]:
-            yellow.y -= VEL
-        if keys_pressed[pygame.K_s]:
-            yellow.y += VEL
-        if keys_pressed[pygame.K_a]:
-            yellow.x -= VEL
-        if keys_pressed[pygame.K_d]:
-            yellow.x += VEL
+
+        if player.state == PlayerState.STATIONARY:
+            if keys_pressed[pygame.K_w] and not keys_pressed[pygame.K_s]: # up
+                player.facing = Direction.UP
+                if player.last_cell.y > 1:
+                    player.next_cell.y -= 1
+                    player.state = PlayerState.MOVING
+            elif keys_pressed[pygame.K_s] and not keys_pressed[pygame.K_w]: # down
+                player.facing = Direction.DOWN
+                if player.last_cell.y < 13:
+                    player.next_cell.y += 1
+                    player.state = PlayerState.MOVING
+            elif keys_pressed[pygame.K_a] and not keys_pressed[pygame.K_d]: # left
+                player.facing = Direction.LEFT
+                if player.last_cell.x > 1:
+                    player.next_cell.x -= 1
+                    player.state = PlayerState.MOVING
+            elif keys_pressed[pygame.K_d] and not keys_pressed[pygame.K_a]: # right
+                player.facing = Direction.RIGHT
+                if player.last_cell.x < 13:
+                    player.next_cell.x += 1
+                    player.state = PlayerState.MOVING
+
         if keys_pressed[pygame.K_SPACE]:
             if not fire_held:
                 fire_held = True
                 pygame.mixer.Sound.play(laser_sound)
         else:
             fire_held = False
-        draw_window(yellow)
+
+        draw_window(player, blocks, gasses)
 
     pygame.quit()
 
