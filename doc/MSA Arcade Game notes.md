@@ -46,6 +46,7 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating my own e
 **Canary Crush** is targeted to 320x240 graphics in landscape orientation with 4 bits-per-pixel (16-color) palette-based colors.
 
     Using 16x16 cells, screen grid is 20 wide by 15 high.
+    The play area is 13x13 cells with a 1-cell border.
    
                             1 1 1 1 1 1 1 1 1 1 2
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
@@ -57,7 +58,7 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating my own e
      4 |w                           w  Game--Art |
      5 |w                           w  Game--Art |
      6 |w                           w            |
-     7 |w                           w P1: 1234567|
+     7 |w             x             w P1: 1234567|
      8 |w                           w #lvl #lives|
      9 |w                           w            |
     10 |w                           w P2: 1234567|
