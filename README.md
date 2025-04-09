@@ -13,8 +13,8 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating an examp
                             1 1 1 1 1 1 1 1 1 1
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
        +----------------------------------------+
-     0 |w w w w w w w w w w w w w w w  Canary   |
-     1 |w                           w  Crush!   |
+     0 |w w w w w w w w w w w w w w w   Canary  |
+     1 |w                           w   Crush!  |
      2 |w                           w           |
      3 |w                           w  Game-Art |
      4 |w                           w  Game-Art |
@@ -53,7 +53,7 @@ Example of game setup at start of game:
     |w   w       w w   w         w #1     ooo|
     |w G w w w w V w   w   w w w w           |
     |w         w       w     G   w MSA Arcade|
-    |w w w w w w w w w w w w w w w  (c) 1982 |
+    |w w w w w w w w w w w w w w w  (c) 1981 |
     +----------------------------------------+
     P = player
     w = wall
