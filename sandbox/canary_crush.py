@@ -202,7 +202,7 @@ def main (args):
         if keys_pressed[pygame.K_SPACE]:
             if not fire_held:
                 fire_held = True
-                pygame.mixer.Sound.play(laser_sound)
+                pygame.mixer.Sound.play(canary_sound_push)
         else:
             fire_held = False
 
@@ -226,6 +226,6 @@ if __name__ == "__main__":
 
     # initialize sound interface
     pygame.mixer.init()
-    laser_sound = pygame.mixer.Sound(os.path.join("assets", "laserShoot_8bit_22kHz_mono.wav"))
+    canary_sound_push = pygame.mixer.Sound(os.path.join("assets", "canary_push.wav"))
 
     main(args)
