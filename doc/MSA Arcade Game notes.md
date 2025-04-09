@@ -41,13 +41,13 @@ These three primary components have equivalent PyGame components within the prot
 
 ## Mock Game: **Canary Crush**
 
-As a part of learning all aspects of the gaming ecosystem, I'm creating my own example game called **Canary Crush**. It is in the style of early-1980's free-standing arcade games. In particular, I'm shamelessly modeling the game after Pengo. It is a simple game that should be easy to replicate, and it provides a means for testing interactions with various components such as the game loop, the user interface, 2D pixel art (sprites), and asynchronous audio event processing.
+As a part of learning all aspects of the gaming ecosystem, I'm creating an example game called **Canary Crush**. It is in the style of early-1980's free-standing arcade games. In particular, I'm shamelessly modeling the game after Pengo. It is a simple 2D top-down game that should be easy to replicate. It provides a means for testing interactions with various components such as the game loop, the user interface, 2D pixel art (sprites), and asynchronous audio event processing.
 
 **Canary Crush** is targeted to 320x240 graphics in landscape orientation with 4 bits-per-pixel (16-color) palette-based colors.
 
-    Using 16x16 cells, screen grid is 20 wide by 15 high.
-    The play area is 13x13 cells with a 1-cell border.
-   
+    Using 16x16 pixel reference cells, screen grid is 20 wide by 15 high.
+    The play area is 13x13 cells with a 1-cell border wall.
+
                             1 1 1 1 1 1 1 1 1 1 2
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
        +-----------------------------------------+
@@ -65,14 +65,14 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating my own e
     11 |w                           w #lvl #lives|
     12 |w                           w            |
     13 |w                           w MSA Arcade |
-    14 |w w w w w w w w w w w w w w w  (c) 1982  |
+    14 |w w w w w w w w w w w w w w w  (c) 1981  |
        +-----------------------------------------+
 
-You are a canary stuck in a mine! A maze of rocks surrounds you. You can slide the rocks if nothing is behind them. You can crush rocks that can't move. Gas clouds are chasing you. Avoid or destroy them by smashing them with rocks. They can also be stunned when player slams a common wall. Stunned clouds move slowly for a period of time.
+### Game Story
 
-Within the rocks are parts of the ventilation shaft. These can be slid but not broken. When sliding, they won't go past each other but will stick together. Connect them to automatically disperse all gas clouds. Destroy all clouds or repair the ventilation shaft to complete the level. The further you descend into the mine, the gas clouds will become more numerous, quick, and aggressive.
+You are a canary stuck in a mine! A maze of rocks surrounds you. You can slide the rocks if nothing is behind them. You can crush rocks that can't move. Gas clouds are chasing you. Avoid or destroy them by smashing them with rocks. They can also be stunned when player slams a common wall. Stunned clouds move slowly for a period of time and can be trampled upon.
 
-At random times and locations, the letters 'E', 'X', 'T', 'R', and 'A' will appear in blocks for a brief period of time. If the player breaks the block in time, they collect that letter. If they collect all letters, they get an extra life.
+Amongst the rocks are parts of a ventilation system. These can be slid but not broken. When sliding, they won't go past each other but will stick together. Connect them to automatically disperse all gas clouds. New gas clouds will be periodically born from "seed rocks". Destroy all clouds or repair the ventilation shaft to complete the level. The further you descend into the mine, the gas clouds will become more numerous, quick, and aggressive.
 
 Example of game setup at start of game:
 
@@ -98,6 +98,16 @@ Example of game setup at start of game:
     G = gas cloud
     V = ventilation shaft
 
+
+### Possible Expansion
+
+The **Game Story** above outlines the basic game and initial target. Below are some additional considerations for expansion:
+* New obstacles, such as holes in the floor, and enemies may be introduced at deeper levels.
+* Have some blocks be frozen in place and require an extra turn to break or push them.
+* Have the floors of some empty cells break-open to reveal lava that slows player but not gas clouds
+* At random times and locations, the letters 'E', 'X', 'T', 'R', and 'A' will appear in blocks for a brief period of time. If the player breaks the block in time, they collect that letter. If they collect all letters, they get an extra life.
+
+
 ### Sprite Inventory
 
 * Wall block
@@ -105,7 +115,8 @@ Example of game setup at start of game:
   * breaking, phase1..4
   * seed location
   * letter block, E/X/T/R/A
-  * ventilation shaft
+* Ventilation shaft
+  * 4 different parts
 * Canary
   * standing, right & up (left & down are derived as H/V flips)
   * pushing, right & up (left & down are derived as H/V flips)
@@ -122,7 +133,3 @@ Example of game setup at start of game:
   * game background
   * player life (egg in nest)
 
-### Future Considerations & Brainstorm
-
-* Have some blocks be frozen in place and require an extra turn to break or push them.
-* Have the floors of some empty cells break-open to reveal lava that slows player but not gas clouds
