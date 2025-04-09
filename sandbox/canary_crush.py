@@ -29,12 +29,14 @@ class Point:
 g_home_cell = Point(7, 7)
 
 class SpriteSheet:
-    def __init__(self, filename):
+    def __init__(self, filename, width=16, height=16):
         self.sheet = pygame.image.load(filename).convert()
+        self.width = width
+        self.height = height
 
-    def image_at(self, x, y, dx, dy, colorkey = None):
-        # Loads image from x, y, x+offset, y+offset.
-        rect = pygame.Rect(x, y, x+dx, y+dy)
+    def image_at(self, index, colorkey = None):
+        # Loads image from horizontal sheet location by index
+        rect = pygame.Rect(index * self.width, 0, (index + 1) * self.width, self.height)
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)
         if colorkey is not None:
@@ -42,6 +44,16 @@ class SpriteSheet:
                 colorkey = image.get_at((0,0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
+
+# indices for sprites stored in horizontal strip in the sprite-sheet
+SPRITE_INDEX_CANARY_RIGHT_NORMAL = 0
+SPRITE_INDEX_CANARY_RIGHT_FLAP   = 1
+SPRITE_INDEX_CANARY_RIGHT_WALK1  = 2   # future
+SPRITE_INDEX_CANARY_RIGHT_WALK2  = 3   # future
+SPRITE_INDEX_CANARY_UP_NORMAL    = 4
+SPRITE_INDEX_CANARY_UP_FLAP      = 5
+SPRITE_INDEX_BLOCK_NORMAL        = 6
+SPRITE_INDEX_ENEMY_NORMAL        = 7
 
 class ActorType (Enum):
     PLAYER = 0
@@ -64,17 +76,16 @@ class Direction (Enum):
 @dataclass
 class Actor:
     type          : ActorType
+    sprite        : pygame.surface
+    last_cell     : Point
     state         : ActorState = ActorState.STATIONARY
-    last_cell     : Point = g_home_cell
-    next_cell     : Point = g_home_cell
     facing        : Direction = Direction.DOWN
-    sprite_width  : int = g_cell_sprite_width
-    sprite_height : int = g_cell_sprite_height
-    position      : Point = Point(last_cell.x * sprite_width, last_cell.y * sprite_height)
-    
-    def load_sprites (self, filename):
-        self.canary_sprite_sheet = SpriteSheet(filename)
-        self.sprite = self.canary_sprite_sheet.image_at(0, 0, self.sprite_width, self.sprite_height, -1)
+
+    def __post_init__ (self):
+        self.sprite_width = g_cell_sprite_width
+        self.sprite_height = g_cell_sprite_height
+        self.next_cell = self.last_cell
+        self.position = Point(self.last_cell.x * self.sprite_width, self.last_cell.y * self.sprite_height)
 
     def get_sprite (self):
         return self.sprite
@@ -109,6 +120,7 @@ class Actor:
             elif self.facing == Direction.RIGHT:
                 self.position.x += g_player_velocity
             # once we reach a cell position on the grid, we're done moving
+            # this needs updated per actor type - blocks slide or break, enemies chase, etc.
             if self.position.y % g_cell_sprite_height == 0 and self.position.x % g_cell_sprite_width == 0:
                 self.state = ActorState.STATIONARY
                 self.last_cell = self.next_cell
@@ -116,6 +128,8 @@ class Actor:
 
 def draw_window (player, blocks, enemies):
     g_pygame_display.fill(g_color_screen_bg)
+    for b in blocks:
+        g_pygame_display.blit(b.get_sprite(), (b.position.x, b.position.y))
     g_pygame_display.blit(player.get_sprite(), (player.position.x, player.position.y))
     pygame.display.update()
 
@@ -159,14 +173,10 @@ def main (args):
     run = True
     fire_held = False
 
-    # setup actors:
-    # player
-    player = Actor(ActorType.PLAYER)
-    player.load_sprites(os.path.join("assets", "canary_sheet.png"))
-    # blocks
+    sprite_sheet = SpriteSheet(os.path.join("assets", "canary_sheet.png"))
+    player = Actor(ActorType.PLAYER, sprite_sheet.image_at(SPRITE_INDEX_CANARY_RIGHT_NORMAL, -1), g_home_cell)
     blocks = []
-    blocks.append(Actor(ActorType.BLOCK, last_cell=(4,4)))
-    # enemies
+    blocks.append(Actor(ActorType.BLOCK, sprite_sheet.image_at(SPRITE_INDEX_BLOCK_NORMAL, -1), Point(4,4)))
     enemies = []
 
     while run:
@@ -174,7 +184,7 @@ def main (args):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        
+
         player.update_position()
 
         keys_pressed = pygame.key.get_pressed()
@@ -188,7 +198,7 @@ def main (args):
                 player.set_direction(Direction.LEFT)
             elif keys_pressed[pygame.K_d] and not keys_pressed[pygame.K_a]: # right
                 player.set_direction(Direction.RIGHT)
- 
+
         if keys_pressed[pygame.K_SPACE]:
             if not fire_held:
                 fire_held = True
@@ -210,7 +220,7 @@ if __name__ == "__main__":
     g_verbose = args.verbose
 
     # create window for game using native (low) resolution but scaled-up as possible
-    g_pygame_display = pygame.display.set_mode((g_display_width, g_display_height), 
+    g_pygame_display = pygame.display.set_mode((g_display_width, g_display_height),
                                            pygame.RESIZABLE | pygame.SCALED)
     pygame.display.set_caption("Canary Crush")
 
