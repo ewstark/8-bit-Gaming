@@ -10,25 +10,25 @@ As a part of learning all aspects of the gaming ecosystem, I'm creating an examp
     Using 16x16 pixel reference cells, screen grid is 20 wide by 15 high.
     The play area is 13x13 cells with a 1-cell border wall.
 
-                            1 1 1 1 1 1 1 1 1 1 2
-        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
-       +-----------------------------------------+
-     0 |w w w w w w w w w w w w w w w   Canary   |
-     1 |w                           w   Crush!   |
-     2 |w                           w            |
-     3 |w                           w  Game-Art  |
-     4 |w                           w  Game-Art  |
-     5 |w                           w  Game-Art  |
-     6 |w                           w            |
-     7 |w             x             w P1: 1234567|
-     8 |w                           w #lvl #lives|
-     9 |w                           w            |
-    10 |w                           w P2: 1234567|
-    11 |w                           w #lvl #lives|
-    12 |w                           w            |
-    13 |w                           w MSA Arcade |
-    14 |w w w w w w w w w w w w w w w  (c) 1981  |
-       +-----------------------------------------+
+                            1 1 1 1 1 1 1 1 1 1
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
+       +----------------------------------------+
+     0 |w w w w w w w w w w w w w w w  Canary   |
+     1 |w                           w  Crush!   |
+     2 |w                           w           |
+     3 |w                           w  Game-Art |
+     4 |w                           w  Game-Art |
+     5 |w                           w  Game-Art |
+     6 |w                           w           |
+     7 |w             x             w P1: 123456|
+     8 |w                           w lvl  lives|
+     9 |w                           w           |
+    10 |w                           w P2: 123456|
+    11 |w                           w lvl  lives|
+    12 |w                           w           |
+    13 |w                           w MSA Arcade|
+    14 |w w w w w w w w w w w w w w w  (c) 1981 |
+       +----------------------------------------+
 
 ### Game Story
 
@@ -38,23 +38,23 @@ Amongst the rocks are parts of a ventilation system. These can be slid but not b
 
 Example of game setup at start of game:
 
-    +-----------------------------------------+
-    |w w w w w w w w w w w w w w w   Canary   |
-    |w   G     w                 w   Crush!   |
-    |w w w w   V w w w   w V w G w            |
-    |w         w           w     w  Game-Art  |
-    |w w w w   V w w w     w w   w  Game-Art  |
-    |w               w       w   w  Game-Art  |
-    |w   w   w   w w w   w w w   w            |
-    |w   w w w     P             w P1: 0000000|
-    |w   w       w   w w w w w w w #1      ooo|
-    |w w w w w w w   w     w     w            |
-    |w       w             w w   w P2: 0000000|
-    |w   w       w w   w         w #1      ooo|
-    |w G w w w w V w   w   w w w w            |
-    |w         w       w     G   w MSA Arcade |
-    |w w w w w w w w w w w w w w w  (c) 1982  |
-    +-----------------------------------------+
+    +----------------------------------------+
+    |w w w w w w w w w w w w w w w   Canary  |
+    |w   G     w                 w   Crush!  |
+    |w w w w   V w w w   w V w G w           |
+    |w         w           w     w  Game-Art |
+    |w w w w   V w w w     w w   w  Game-Art |
+    |w               w       w   w  Game-Art |
+    |w   w   w   w w w   w w w   w           |
+    |w   w w w     P             w P1: 000000|
+    |w   w       w   w w w w w w w #1     ooo|
+    |w w w w w w w   w     w     w           |
+    |w       w             w w   w P2: 000000|
+    |w   w       w w   w         w #1     ooo|
+    |w G w w w w V w   w   w w w w           |
+    |w         w       w     G   w MSA Arcade|
+    |w w w w w w w w w w w w w w w  (c) 1982 |
+    +----------------------------------------+
     P = player
     w = wall
     G = gas cloud
