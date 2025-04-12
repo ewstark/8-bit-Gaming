@@ -125,11 +125,14 @@ class Actor:
                 self.state = ActorState.STATIONARY
                 self.last_cell = self.next_cell
 
-
 def draw_window (player, blocks, enemies):
-    g_pygame_display.fill(g_color_screen_bg)
+    global g_display_bg
+    # g_pygame_display.fill(g_color_screen_bg)
+    g_pygame_display.blit(g_display_bg, (0, 0))
     for b in blocks:
         g_pygame_display.blit(b.get_sprite(), (b.position.x, b.position.y))
+    for e in enemies:
+        g_pygame_display.blit(e.get_sprite(), (e.position.x, e.position.y))
     g_pygame_display.blit(player.get_sprite(), (player.position.x, player.position.y))
     pygame.display.update()
 
@@ -169,9 +172,12 @@ class audio_interface:
 
 
 def main (args):
+    global g_display_bg
     clock = pygame.time.Clock()
     run = True
     fire_held = False
+
+    g_display_bg = pygame.image.load(os.path.join("assets", "canary_crush_bg.png")).convert()
 
     sprite_sheet = SpriteSheet(os.path.join("assets", "canary_sheet.png"))
     player = Actor(ActorType.PLAYER, sprite_sheet.image_at(SPRITE_INDEX_CANARY_RIGHT_NORMAL, -1), g_home_cell)
