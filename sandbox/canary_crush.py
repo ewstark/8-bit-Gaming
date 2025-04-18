@@ -29,14 +29,14 @@ class Point:
 g_home_cell = Point(7, 7)
 
 class SpriteSheet:
-    def __init__(self, filename, width=16, height=16):
+    def __init__ (self, filename, width=16, height=16):
         self.sheet = pygame.image.load(filename).convert()
         self.width = width
         self.height = height
 
-    def image_at(self, index, colorkey = None):
-        # Loads image from horizontal sheet location by index
-        rect = pygame.Rect(index * self.width, 0, (index + 1) * self.width, self.height)
+    def image_at_index (self, index, colorkey = None):
+        # Loads image from horizontal sheet location by zero-based index
+        rect = pygame.Rect(index * self.width, 0, self.width, self.height)
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)
         if colorkey is not None:
@@ -57,8 +57,9 @@ SPRITE_INDEX_ENEMY_NORMAL        = 7
 
 class ActorType (Enum):
     PLAYER = 0
-    BLOCK = 1
-    ENEMY = 2
+    ENEMY = 1
+    BLOCK = 2
+    VENTILATION = 3
 
 class ActorState (Enum):
     STATIONARY = 0
@@ -75,11 +76,11 @@ class Direction (Enum):
 
 @dataclass
 class Actor:
-    type          : ActorType
-    sprite        : pygame.surface
-    last_cell     : Point
-    state         : ActorState = ActorState.STATIONARY
-    facing        : Direction = Direction.DOWN
+    type      : ActorType
+    sprites   : {}
+    last_cell : Point
+    state     : ActorState = ActorState.STATIONARY
+    facing    : Direction = Direction.DOWN
 
     def __post_init__ (self):
         self.sprite_width = g_cell_sprite_width
@@ -88,9 +89,11 @@ class Actor:
         self.position = Point(self.last_cell.x * self.sprite_width, self.last_cell.y * self.sprite_height)
 
     def get_sprite (self):
-        return self.sprite
+        if self.type == ActorType.PLAYER:
+            return self.sprites[self.facing]
+        return self.sprites[next(iter(self.sprites))]
 
-    def set_direction(self, direction):
+    def set_direction (self, direction):
         self.facing = direction
         if direction == Direction.UP:
             if self.last_cell.y > 1:
@@ -180,10 +183,20 @@ def main (args):
     g_display_bg = pygame.image.load(os.path.join("assets", "canary_crush_bg.png")).convert()
 
     sprite_sheet = SpriteSheet(os.path.join("assets", "canary_sheet.png"))
-    player = Actor(ActorType.PLAYER, sprite_sheet.image_at(SPRITE_INDEX_CANARY_RIGHT_NORMAL, -1), g_home_cell)
+    player_sprites = {}
+    player_sprites[Direction.UP] = sprite_sheet.image_at_index(SPRITE_INDEX_CANARY_UP_NORMAL, -1)
+    player_sprites[Direction.RIGHT] = sprite_sheet.image_at_index(SPRITE_INDEX_CANARY_RIGHT_NORMAL, -1)
+    player_sprites[Direction.DOWN] = pygame.transform.flip(sprite_sheet.image_at_index(SPRITE_INDEX_CANARY_UP_NORMAL, -1), False, True)
+    player_sprites[Direction.LEFT] = pygame.transform.flip(sprite_sheet.image_at_index(SPRITE_INDEX_CANARY_RIGHT_NORMAL, -1), True, False)
+    player = Actor(ActorType.PLAYER, player_sprites, g_home_cell)
     blocks = []
-    blocks.append(Actor(ActorType.BLOCK, sprite_sheet.image_at(SPRITE_INDEX_BLOCK_NORMAL, -1), Point(4,4)))
+    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,4)))
+    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,5)))
+    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,6)))
+    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(5,4)))
+    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(6,6)))
     enemies = []
+    enemies.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_ENEMY_NORMAL, -1)}, Point(4,7)))
 
     while run:
         clock.tick(60) # limit update rate to 60 Hz
