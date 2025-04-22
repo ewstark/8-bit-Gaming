@@ -20,6 +20,8 @@ g_cell_sprite_width, g_cell_sprite_height = 16, 16
 g_player_velocity = 2
 g_color_screen_bg = (10, 30, 20)
 
+# user-input status
+g_push_button_held = False
 
 @dataclass
 class Point:
@@ -208,7 +210,6 @@ def main (args):
     global g_display_bg, g_player, g_blocks, g_enemies
     clock = pygame.time.Clock()
     run = True
-    fire_held = False
 
     g_display_bg = pygame.image.load(os.path.join("assets", "canary_crush_bg.png")).convert()
 
@@ -247,12 +248,15 @@ def main (args):
                 g_player.set_direction(Direction.LEFT)
             elif keys_pressed[pygame.K_d] and not keys_pressed[pygame.K_a]: # right
                 g_player.set_direction(Direction.RIGHT)
-        if keys_pressed[pygame.K_SPACE]:
-            if not fire_held:
-                fire_held = True
+        if keys_pressed[pygame.K_SPACE]: # push
+            if not g_push_button_held and g_player.state == ActorState.STATIONARY:
+                g_push_button_held = True
                 pygame.mixer.Sound.play(canary_sound_push)
+                g_player.state = ActorState.PUSHING
         else:
-            fire_held = False
+            if g_player.state == ActorState.PUSHING:
+                g_player.state = ActorState.STATIONARY
+            g_push_button_held = False
 
         g_player.update_position()
 
