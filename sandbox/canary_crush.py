@@ -9,6 +9,7 @@ import os
 
 from enum import Enum
 from dataclasses import dataclass, field
+from copy import copy
 
 # verbose debug output while game is running
 g_verbose = False
@@ -76,69 +77,85 @@ class Direction (Enum):
 
 @dataclass
 class Actor:
-    type      : ActorType
-    sprites   : {}
-    last_cell : Point
-    state     : ActorState = ActorState.STATIONARY
-    facing    : Direction = Direction.DOWN
+    type         : ActorType
+    sprites      : {}
+    current_cell : Point
+    next_cell    : Point = Point(0,0)
+    state        : ActorState = ActorState.STATIONARY
+    facing       : Direction = Direction.RIGHT
+    phase        : int = 0
 
     def __post_init__ (self):
         self.sprite_width = g_cell_sprite_width
         self.sprite_height = g_cell_sprite_height
-        self.next_cell = self.last_cell
-        self.position = Point(self.last_cell.x * self.sprite_width, self.last_cell.y * self.sprite_height)
+        self.position = Point(self.current_cell.x * self.sprite_width, self.current_cell.y * self.sprite_height)
 
     def get_sprite (self):
-        if self.type == ActorType.PLAYER:
-            return self.sprites[self.facing]
         return self.sprites[next(iter(self.sprites))]
 
     def set_direction (self, direction):
+        pass
+
+    def update_position (self):
+        pass
+
+
+@dataclass
+class PlayerActor (Actor):
+    def get_sprite (self):
+        return self.sprites[self.facing]
+
+    def set_direction (self, direction):
         self.facing = direction
+        possible_next_cell = copy(self.current_cell)
         if direction == Direction.UP:
-            if self.last_cell.y > 1:
-                self.next_cell.y -= 1
-                self.state = ActorState.MOVING
+            possible_next_cell.y -= 1
         elif direction == Direction.DOWN:
-            if self.last_cell.y < 13:
-                self.next_cell.y += 1
-                self.state = ActorState.MOVING
+            possible_next_cell.y += 1
         elif direction == Direction.LEFT:
-            if self.last_cell.x > 1:
-                self.next_cell.x -= 1
-                self.state = ActorState.MOVING
+            possible_next_cell.x -= 1
         elif direction == Direction.RIGHT:
-            if self.last_cell.x < 13:
-                self.next_cell.x += 1
+            possible_next_cell.x += 1
+        # make sure we stay on board
+        if 1 <= possible_next_cell.x <= 13 and 1 <= possible_next_cell.y <= 13:
+            if find_block(possible_next_cell):
+                pass
+            elif find_enemy(possible_next_cell):
+                self.state = ActorState.DEAD
+            else:
+                self.next_cell = possible_next_cell
                 self.state = ActorState.MOVING
 
     def update_position (self):
         if self.state == ActorState.MOVING:
             if self.facing == Direction.UP:
                 self.position.y -= g_player_velocity
+                self.phase += 1
             elif self.facing == Direction.DOWN:
                 self.position.y += g_player_velocity
+                self.phase += 1
             elif self.facing == Direction.LEFT:
                 self.position.x -= g_player_velocity
+                self.phase += 1
             elif self.facing == Direction.RIGHT:
                 self.position.x += g_player_velocity
+                self.phase += 1
             # once we reach a cell position on the grid, we're done moving
-            # this needs updated per actor type - blocks slide or break, enemies chase, etc.
             if self.position.y % g_cell_sprite_height == 0 and self.position.x % g_cell_sprite_width == 0:
                 self.state = ActorState.STATIONARY
-                self.last_cell = self.next_cell
+                self.phase = 0
+                self.current_cell = copy(self.next_cell)
 
-def draw_window (player, blocks, enemies):
-    global g_display_bg
-    # g_pygame_display.fill(g_color_screen_bg)
+
+def draw_window ():
+    global g_display_bg, g_player, g_blocks, g_enemies
     g_pygame_display.blit(g_display_bg, (0, 0))
-    for b in blocks:
+    for b in g_blocks:
         g_pygame_display.blit(b.get_sprite(), (b.position.x, b.position.y))
-    for e in enemies:
+    for e in g_enemies:
         g_pygame_display.blit(e.get_sprite(), (e.position.x, e.position.y))
-    g_pygame_display.blit(player.get_sprite(), (player.position.x, player.position.y))
+    g_pygame_display.blit(g_player.get_sprite(), (g_player.position.x, g_player.position.y))
     pygame.display.update()
-
 
 class audio_interface:
     # Assume a register layout that occurs in one contiguous address range that is twice the size,
@@ -173,9 +190,22 @@ class audio_interface:
         # set [address] = value
         pass
 
+def find_block (pos):
+    global g_blocks
+    for b in g_blocks:
+        if b.current_cell == pos:
+            return b
+    return None
+
+def find_enemy (pos):
+    global g_enemies
+    for e in g_enemies:
+        if e.current_cell == pos:
+            return e
+    return None
 
 def main (args):
-    global g_display_bg
+    global g_display_bg, g_player, g_blocks, g_enemies
     clock = pygame.time.Clock()
     run = True
     fire_held = False
@@ -188,15 +218,18 @@ def main (args):
     player_sprites[Direction.RIGHT] = sprite_sheet.image_at_index(SPRITE_INDEX_CANARY_RIGHT_NORMAL, -1)
     player_sprites[Direction.DOWN] = pygame.transform.flip(sprite_sheet.image_at_index(SPRITE_INDEX_CANARY_UP_NORMAL, -1), False, True)
     player_sprites[Direction.LEFT] = pygame.transform.flip(sprite_sheet.image_at_index(SPRITE_INDEX_CANARY_RIGHT_NORMAL, -1), True, False)
-    player = Actor(ActorType.PLAYER, player_sprites, g_home_cell)
-    blocks = []
-    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,4)))
-    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,5)))
-    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,6)))
-    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(5,4)))
-    blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(6,6)))
-    enemies = []
-    enemies.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_ENEMY_NORMAL, -1)}, Point(4,7)))
+
+    g_player = PlayerActor(ActorType.PLAYER, player_sprites, g_home_cell)
+
+    g_blocks = []
+    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,4)))
+    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,5)))
+    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,6)))
+    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(5,4)))
+    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(6,6)))
+
+    g_enemies = []
+    g_enemies.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_ENEMY_NORMAL, -1)}, Point(4,7)))
 
     while run:
         clock.tick(60) # limit update rate to 60 Hz
@@ -204,20 +237,16 @@ def main (args):
             if event.type == pygame.QUIT:
                 run = False
 
-        player.update_position()
-
         keys_pressed = pygame.key.get_pressed()
-
-        if player.state == ActorState.STATIONARY:
+        if g_player.state == ActorState.STATIONARY:
             if keys_pressed[pygame.K_w] and not keys_pressed[pygame.K_s]: # up
-                player.set_direction(Direction.UP)
+                g_player.set_direction(Direction.UP)
             elif keys_pressed[pygame.K_s] and not keys_pressed[pygame.K_w]: # down
-                player.set_direction(Direction.DOWN)
+                g_player.set_direction(Direction.DOWN)
             elif keys_pressed[pygame.K_a] and not keys_pressed[pygame.K_d]: # left
-                player.set_direction(Direction.LEFT)
+                g_player.set_direction(Direction.LEFT)
             elif keys_pressed[pygame.K_d] and not keys_pressed[pygame.K_a]: # right
-                player.set_direction(Direction.RIGHT)
-
+                g_player.set_direction(Direction.RIGHT)
         if keys_pressed[pygame.K_SPACE]:
             if not fire_held:
                 fire_held = True
@@ -225,7 +254,9 @@ def main (args):
         else:
             fire_held = False
 
-        draw_window(player, blocks, enemies)
+        g_player.update_position()
+
+        draw_window()
 
     pygame.quit()
 
@@ -239,8 +270,7 @@ if __name__ == "__main__":
     g_verbose = args.verbose
 
     # create window for game using native (low) resolution but scaled-up as possible
-    g_pygame_display = pygame.display.set_mode((g_display_width, g_display_height),
-                                           pygame.RESIZABLE | pygame.SCALED)
+    g_pygame_display = pygame.display.set_mode((g_display_width, g_display_height), pygame.RESIZABLE | pygame.SCALED)
     pygame.display.set_caption("Canary Crush")
 
     # initialize sound interface
