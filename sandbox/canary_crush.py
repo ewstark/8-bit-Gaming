@@ -82,7 +82,7 @@ class Actor:
     type         : ActorType
     sprites      : {}
     current_cell : Point
-    next_cell    : Point = Point(0,0)
+    next_cell    : Point = None
     state        : ActorState = ActorState.STATIONARY
     facing       : Direction = Direction.RIGHT
     phase        : int = 0
