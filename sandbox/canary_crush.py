@@ -80,7 +80,7 @@ class Direction (Enum):
 @dataclass
 class Actor:
     type         : ActorType
-    sprites      : {}
+    sprites      : dict[int,object]
     current_cell : Point
     next_cell    : Point = None
     state        : ActorState = ActorState.STATIONARY
