@@ -4,8 +4,9 @@
 # such as low-res sprite-based pixel graphics and channel-based asynchronous
 # audio events.
 
-import pygame
 import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame
 
 from enum import Enum
 from dataclasses import dataclass, field
@@ -206,6 +207,32 @@ def find_enemy (pos):
             return e
     return None
 
+
+def get_initial_blocks (level, sprite_sheet):
+    blocks = []
+    if level >= 0:
+        setup = ["wwwwwwwwwwwwwww", # 0
+                 "w....b......b.w", # 1
+                 "w.bbbb.bbbbbb.w", # 2 
+                 "w....b...b....w", # 3
+                 "wbbb.b.b.b.bbbw", # 4
+                 "wb.b.b.b.b....w", # 5
+                 "w....b.b.bbbb.w", # 6
+                 "w.bb.b......b.w", # 7
+                 "w..b...bb.b.b.w", # 8
+                 "wbbb.b..b.b...w", # 9
+                 "w....b...bbb.bw", # 10
+                 "w.bb.b.b..b...w", # 11
+                 "wbb....bb.bbb.w", # 12
+                 "w...bb........w", # 13
+                 "wwwwwwwwwwwwwww"] # 14
+    for y,r in enumerate(setup):
+        for x,c in enumerate(r):
+            if c == 'b':
+                blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(x,y)))
+    return blocks
+
+
 def main (args):
     global g_display_bg, g_player, g_blocks, g_enemies
     clock = pygame.time.Clock()
@@ -222,12 +249,7 @@ def main (args):
 
     g_player = PlayerActor(ActorType.PLAYER, player_sprites, g_home_cell)
 
-    g_blocks = []
-    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,4)))
-    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,5)))
-    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(4,6)))
-    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(5,4)))
-    g_blocks.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_BLOCK_NORMAL, -1)}, Point(6,6)))
+    g_blocks = get_initial_blocks(0, sprite_sheet)
 
     g_enemies = []
     g_enemies.append(Actor(ActorType.BLOCK, {0: sprite_sheet.image_at_index(SPRITE_INDEX_ENEMY_NORMAL, -1)}, Point(4,7)))
